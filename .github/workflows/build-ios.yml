@@ -1,4 +1,4 @@
-name: Build iPad App (.ipa)
+name: Build iPadOS App (.ipa)
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-ios:
+  build-ipados:
     runs-on: macos-latest
 
     steps:
@@ -23,21 +23,21 @@ jobs:
           npm install
           npm install @capacitor/core @capacitor/cli @capacitor/ios
 
-      - name: Initialize Capacitor iOS
+      - name: Initialize Capacitor iPadOS
         run: |
           npx cap add ios
           npx cap copy ios
 
-      - name: Build Xcode iOS App (.ipa)
+      - name: Build Xcode iPadOS App (.ipa)
         run: |
           cd ios/App
-          xcodebuild -workspace App.xcworkspace -scheme App -sdk iphoneos -configuration Release -derivedDataPath build archive -archivePath build/App.xcarchive CODE_SIGNING_ALLOWED=NO
+          xcodebuild -workspace App.xcworkspace -scheme App -sdk iphoneos -configuration Release -derivedDataPath build archive -archivePath build/App.xcarchive CODE_SIGNING_ALLOWED=NO TARGETED_DEVICE_FAMILY="1,2"
           mkdir -p Payload
           cp -r build/App.xcarchive/Products/Applications/App.app Payload/
-          zip -r PyPadStudio_iPad.ipa Payload
+          zip -r PyPadStudio_iPadOS.ipa Payload
 
-      - name: Upload IPA Artifact
+      - name: Upload iPadOS IPA Artifact
         uses: actions/upload-artifact@v3
         with:
-          name: PyPadStudio_iPad.ipa
-          path: ios/App/PyPadStudio_iPad.ipa
+          name: PyPadStudio_iPadOS.ipa
+          path: ios/App/PyPadStudio_iPadOS.ipa
