@@ -1,0 +1,13 @@
+{
+  "appId": "com.pypad.studio",
+  "appName": "PyPad Studio",
+  "webDir": ".",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https"
+  },
+  "ios": {
+    "contentInset": "always",
+    "allowsLinkPreview": false
+  }
+}

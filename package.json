@@ -1,0 +1,19 @@
+{
+  "name": "pypad-studio",
+  "version": "1.0.0",
+  "description": "PyPad Studio - Native iPad & Web Python IDE",
+  "main": "index.html",
+  "scripts": {
+    "start": "python -m http.server 8080",
+    "cap:add:ios": "npx cap add ios",
+    "cap:copy": "npx cap copy",
+    "cap:open:ios": "npx cap open ios"
+  },
+  "dependencies": {
+    "@capacitor/core": "^6.0.0",
+    "@capacitor/ios": "^6.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.0.0"
+  }
+}

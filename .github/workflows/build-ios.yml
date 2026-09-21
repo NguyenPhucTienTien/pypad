@@ -1,0 +1,43 @@
+name: Build iPad App (.ipa)
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build-ios:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install Dependencies
+        run: |
+          npm install
+          npm install @capacitor/core @capacitor/cli @capacitor/ios
+
+      - name: Initialize Capacitor iOS
+        run: |
+          npx cap add ios
+          npx cap copy ios
+
+      - name: Build Xcode iOS App (.ipa)
+        run: |
+          cd ios/App
+          xcodebuild -workspace App.xcworkspace -scheme App -sdk iphoneos -configuration Release -derivedDataPath build archive -archivePath build/App.xcarchive CODE_SIGNING_ALLOWED=NO
+          mkdir -p Payload
+          cp -r build/App.xcarchive/Products/Applications/App.app Payload/
+          zip -r PyPadStudio_iPad.ipa Payload
+
+      - name: Upload IPA Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: PyPadStudio_iPad.ipa
+          path: ios/App/PyPadStudio_iPad.ipa

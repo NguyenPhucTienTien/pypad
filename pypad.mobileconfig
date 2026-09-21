@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>PayloadContent</key>
+    <array>
+        <dict>
+            <key>FullScreen</key>
+            <true/>
+            <key>IsRemovable</key>
+            <true/>
+            <key>Label</key>
+            <string>PyPad Studio</string>
+            <key>PayloadDescription</key>
+            <string>PyPad Python IDE Web App cho iPad</string>
+            <key>PayloadDisplayName</key>
+            <string>PyPad Studio</string>
+            <key>PayloadIdentifier</key>
+            <string>com.pypad.studio.webclip</string>
+            <key>PayloadType</key>
+            <string>com.apple.webClip.managed</string>
+            <key>PayloadUUID</key>
+            <string>a4b7f8c9-1234-4321-8765-abcdef123456</string>
+            <key>PayloadVersion</key>
+            <integer>1</integer>
+            <key>URL</key>
+            <string>http://localhost:8080/</string>
+        </dict>
+    </array>
+    <key>PayloadDisplayName</key>
+    <string>PyPad Studio iPad Configuration Profile</string>
+    <key>PayloadIdentifier</key>
+    <string>com.pypad.studio.profile</string>
+    <key>PayloadRemovalDisallowed</key>
+    <false/>
+    <key>PayloadType</key>
+    <string>Configuration</string>
+    <key>PayloadUUID</key>
+    <string>98765432-1234-4321-8765-fedcba654321</string>
+    <key>PayloadVersion</key>
+    <integer>1</integer>
+</dict>
+</plist>
