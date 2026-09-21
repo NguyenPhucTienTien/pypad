@@ -5,9 +5,7 @@
   "main": "index.html",
   "scripts": {
     "start": "python -m http.server 8080",
-    "cap:add:ios": "npx cap add ios",
-    "cap:copy": "npx cap copy",
-    "cap:open:ios": "npx cap open ios"
+    "build": "node -e \"const fs=require('fs'); if(!fs.existsSync('www')) fs.mkdirSync('www'); ['index.html','style.css','app.js','manifest.json','sw.js','pypad.mobileconfig'].forEach(f=>fs.copyFileSync(f,'www/'+f));\""
   },
   "dependencies": {
     "@capacitor/core": "^6.0.0",

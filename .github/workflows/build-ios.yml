@@ -18,14 +18,13 @@ jobs:
         with:
           node-version: 20
 
-      - name: Install Dependencies
+      - name: Install Dependencies & Build Web Assets
         run: |
           npm install
-          npm install @capacitor/core @capacitor/cli @capacitor/ios
+          npm run build
 
-      - name: Initialize Capacitor & Sync iOS
+      - name: Sync Capacitor iPadOS Project
         run: |
-          npx cap add ios || true
           npx cap sync ios
 
       - name: Build Xcode Archive

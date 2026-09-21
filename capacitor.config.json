@@ -1,8 +1,7 @@
 {
   "appId": "com.pypad.studio",
   "appName": "PyPad Studio",
-  "webDir": ".",
-  "bundledWebRuntime": false,
+  "webDir": "www",
   "server": {
     "androidScheme": "https"
   },
