@@ -11,33 +11,46 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
 
       - name: Install Dependencies
         run: |
           npm install
           npm install @capacitor/core @capacitor/cli @capacitor/ios
 
-      - name: Initialize Capacitor iPadOS
+      - name: Initialize Capacitor & Sync iOS
         run: |
-          npx cap add ios
-          npx cap copy ios
+          npx cap add ios || true
+          npx cap sync ios
 
-      - name: Build Xcode iPadOS App (.ipa)
+      - name: Build Xcode Archive
         run: |
           cd ios/App
-          xcodebuild -workspace App.xcworkspace -scheme App -sdk iphoneos -configuration Release -derivedDataPath build archive -archivePath build/App.xcarchive CODE_SIGNING_ALLOWED=NO TARGETED_DEVICE_FAMILY="1,2"
+          xcodebuild archive \
+            -workspace App.xcworkspace \
+            -scheme App \
+            -sdk iphoneos \
+            -configuration Release \
+            -archivePath build/App.xcarchive \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            TARGETED_DEVICE_FAMILY="1,2"
+
+      - name: Package Payload to .IPA
+        run: |
+          cd ios/App
           mkdir -p Payload
           cp -r build/App.xcarchive/Products/Applications/App.app Payload/
           zip -r PyPadStudio_iPadOS.ipa Payload
 
       - name: Upload iPadOS IPA Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: PyPadStudio_iPadOS.ipa
           path: ios/App/PyPadStudio_iPadOS.ipa
