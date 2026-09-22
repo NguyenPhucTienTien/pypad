@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>PyPad Studio - App Lập trình Python cho iPad</title>
-    <meta name="description" content="PyPad Studio - Trình soạn thảo và thực thi Python chuyên nghiệp trên iPad. Tự động biên dịch Python offline với Pyodide WASM, bàn phím phím tắt cảm ứng và hiển thị đồ họa.">
+    <title>PyPad Studio - Trình Lập Trình Python Chuyên Nghiệp</title>
+    <meta name="description" content="PyPad Studio - Trình soạn thảo và thực thi Python trực tiếp trên iPad và Web. Giao diện 2 cột tối ưu cho Code và công cụ Touch.">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="PyPad">
     <link rel="apple-touch-icon" href="https://img.icons8.com/color/180/python.png">
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#0f172a">
+    <meta name="theme-color" content="#0b0f19">
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -33,6 +33,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.7/ace.js" type="text/javascript" charset="utf-8"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.7/mode-python.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.7/theme-one_dark.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.7/theme-monokai.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.7/theme-tomorrow_night.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.7/ext-language_tools.min.js"></script>
     
     <!-- Pyodide WASM Python Engine -->
@@ -42,246 +44,415 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="app-container" class="ipad-theme">
-        <!-- Top Status Bar & Header -->
+    <div id="app-container">
+        <!-- Header Thanh Công Cụ Trên -->
         <header class="ipad-header">
+            <!-- Header Left: Logo & Badge File -->
             <div class="header-left">
-                <button id="toggle-sidebar" class="icon-btn" title="Đóng/Mở Thanh Sidebar">
-                    <i class="fa-solid fa-sidebar"></i>
-                </button>
                 <div class="brand">
                     <i class="fa-brands fa-python brand-icon"></i>
-                    <span class="brand-name">PyPad <small>Touch</small></span>
+                    <span class="brand-name">PyPad <small>Studio</small></span>
                 </div>
-            </div>
-
-            <div class="header-center">
-                <div class="file-title-badge">
-                    <i class="fa-regular fa-file-code"></i>
+                <div class="file-title-badge" id="btn-rename-file" title="Click để đổi tên file">
+                    <i class="fa-brands fa-python file-badge-icon"></i>
                     <span id="current-filename">main.py</span>
-                    <span id="unsaved-indicator" class="dot hidden"></span>
+                    <span id="unsaved-indicator" class="dot hidden" title="Có thay đổi chưa lưu"></span>
                 </div>
             </div>
 
+            <!-- Header Center: WASM Engine Status -->
+            <div class="header-center">
+                <div id="engine-status" class="engine-badge loading" title="Trạng thái Pyodide WASM">
+                    <i class="fa-solid fa-circle-notch fa-spin"></i>
+                    <span class="status-text">Đang tải Python...</span>
+                </div>
+            </div>
+
+            <!-- Header Right: Run Menu, Output Float Toggle, Right File Menu, Action Menu -->
             <div class="header-right">
-                <button id="btn-run" class="action-btn run-btn" title="Chạy mã Python (Ctrl+Enter)">
-                    <i class="fa-solid fa-play"></i>
-                    <span>RUN</span>
-                </button>
-                <button id="btn-stop" class="action-btn stop-btn hidden" title="Dừng chương trình">
-                    <i class="fa-solid fa-stop"></i>
-                    <span>STOP</span>
-                </button>
-                <button id="btn-new-file" class="icon-btn" title="Tạo File Mới">
-                    <i class="fa-solid fa-plus"></i>
-                </button>
-                <button id="btn-save" class="icon-btn" title="Lưu File">
-                    <i class="fa-solid fa-floppy-disk"></i>
-                </button>
-                <button id="btn-layout-toggle" class="icon-btn" title="Chuyển chế độ xem Split View">
-                    <i class="fa-solid fa-columns"></i>
-                </button>
-                <button id="btn-settings" class="icon-btn" title="Cài đặt">
-                    <i class="fa-solid fa-gear"></i>
-                </button>
-            </div>
-        </header>
-
-        <!-- Main Content Area -->
-        <div class="main-layout">
-            <!-- Left Sidebar -->
-            <aside id="sidebar" class="sidebar">
-                <div class="sidebar-tabs">
-                    <button class="sidebar-tab-btn active" data-tab="files">
-                        <i class="fa-solid fa-folder-open"></i> Files
+                <!-- Group Nút Run với Menu Lựa chọn Chạy (Requirement 1) -->
+                <div class="run-btn-group">
+                    <button id="btn-run" class="action-btn run-btn" title="Chạy mã Python (Ctrl+Enter)">
+                        <i class="fa-solid fa-play"></i>
+                        <span>CHẠY</span>
                     </button>
-                    <button class="sidebar-tab-btn" data-tab="examples">
-                        <i class="fa-solid fa-lightbulb"></i> Mã Mẫu
+                    <button id="btn-stop" class="action-btn stop-btn hidden" title="Đang chạy mã...">
+                        <i class="fa-solid fa-stop"></i>
+                        <span>DỪNG</span>
                     </button>
-                    <button class="sidebar-tab-btn" data-tab="packages">
-                        <i class="fa-solid fa-cubes"></i> Gói Pyodide
+                    <button id="btn-run-dropdown" class="run-dropdown-toggle" title="Tùy chọn kiểu Chạy Code">
+                        <i class="fa-solid fa-chevron-down"></i>
                     </button>
-                </div>
-
-                <!-- Files Tab Content -->
-                <div id="tab-files" class="sidebar-tab-content active">
-                    <div class="sidebar-section-header">
-                        <span>TẬP TIN DỰ ÁN</span>
-                        <div class="section-actions">
-                            <button id="sidebar-new-file" title="Tạo File Mới"><i class="fa-solid fa-file-circle-plus"></i></button>
-                            <button id="sidebar-import-file" title="Nhập file .py từ iPad"><i class="fa-solid fa-file-import"></i></button>
-                        </div>
-                    </div>
-                    <ul id="file-list" class="file-tree">
-                        <!-- Dynamic file list items -->
-                    </ul>
-                </div>
-
-                <!-- Examples Tab Content -->
-                <div id="tab-examples" class="sidebar-tab-content">
-                    <div class="sidebar-section-header">
-                        <span>THƯ VIỆN CODE MẪU</span>
-                    </div>
-                    <div class="example-list">
-                        <div class="example-card" data-example="hello">
-                            <div class="example-icon"><i class="fa-solid fa-hand"></i></div>
-                            <div class="example-info">
-                                <h4>Hello World & Input</h4>
-                                <p>Cơ bản về biến, vòng lặp và nhập xuất</p>
+                    
+                    <!-- Menu thả xuống khi click chevron Run -->
+                    <div id="run-dropdown-menu" class="run-dropdown-menu hidden glass-card">
+                        <button class="run-menu-item" id="run-opt-normal">
+                            <i class="fa-solid fa-play text-green"></i>
+                            <div class="item-text">
+                                <span>Run Without Debug</span>
+                                <small>Thực thi mã Python tiêu chuẩn</small>
                             </div>
-                        </div>
-                        <div class="example-card" data-example="plot">
-                            <div class="example-icon"><i class="fa-solid fa-chart-line"></i></div>
-                            <div class="example-info">
-                                <h4>Matplotlib Chart</h4>
-                                <p>Vẽ biểu đồ Sin/Cos và thị giác hóa dữ liệu</p>
+                        </button>
+                        <button class="run-menu-item" id="run-opt-repl">
+                            <i class="fa-solid fa-terminal text-yellow"></i>
+                            <div class="item-text">
+                                <span>Run REPL</span>
+                                <small>Mở và chuyển sang REPL Interactive</small>
                             </div>
-                        </div>
-                        <div class="example-card" data-example="turtle">
-                            <div class="example-icon"><i class="fa-solid fa-gamepad"></i></div>
-                            <div class="example-info">
-                                <h4>Turtle Spiral Graphics</h4>
-                                <p>Đồ họa nghệ thuật hình học sắc màu</p>
+                        </button>
+                        <button class="run-menu-item" id="run-opt-plot">
+                            <i class="fa-solid fa-chart-line text-cyan"></i>
+                            <div class="item-text">
+                                <span>Run Biểu Đồ</span>
+                                <small>Chạy & hiển thị đồ thị Matplotlib</small>
                             </div>
-                        </div>
-                        <div class="example-card" data-example="game">
-                            <div class="example-icon"><i class="fa-solid fa-dice"></i></div>
-                            <div class="example-info">
-                                <h4>Game Đoán Số Interactive</h4>
-                                <p>Minigame tương tác trên Console</p>
-                            </div>
-                        </div>
-                        <div class="example-card" data-example="ds">
-                            <div class="example-icon"><i class="fa-solid fa-calculator"></i></div>
-                            <div class="example-info">
-                                <h4>Numpy & Thống Kê</h4>
-                                <p>Tính toán ma trận và phân tích chuỗi số</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Packages Tab Content -->
-                <div id="tab-packages" class="sidebar-tab-content">
-                    <div class="sidebar-section-header">
-                        <span>THƯ VIỆN HỖ TRỢ</span>
-                    </div>
-                    <div class="packages-info">
-                        <p class="pkg-desc">PyPad chạy trực tiếp Python WASM với hàng loạt thư viện sẵn có:</p>
-                        <ul class="pkg-list">
-                            <li><i class="fa-solid fa-check text-green"></i> <code>matplotlib</code> (Vẽ đồ thị)</li>
-                            <li><i class="fa-solid fa-check text-green"></i> <code>numpy</code> (Ma trận & số học)</li>
-                            <li><i class="fa-solid fa-check text-green"></i> <code>math</code>, <code>random</code>, <code>json</code></li>
-                            <li><i class="fa-solid fa-check text-green"></i> <code>datetime</code>, <code>re</code>, <code>collections</code></li>
-                            <li><i class="fa-solid fa-check text-green"></i> <code>turtle</code> (Đồ họa canvas)</li>
-                        </ul>
-                        <button id="btn-install-micropip" class="secondary-btn btn-full">
-                            <i class="fa-solid fa-download"></i> Cài đặt gói mở rộng (micropip)
                         </button>
                     </div>
                 </div>
-            </aside>
 
-            <!-- Workspace Editor & Output Split -->
-            <div id="workspace" class="workspace split-horizontal">
-                <!-- Editor Pane -->
-                <div id="editor-pane" class="pane editor-pane">
-                    <!-- Open Editor Tabs -->
-                    <div id="tabs-bar" class="tabs-bar">
-                        <!-- Dynamic file tabs -->
+                <!-- Nút Hiện/Ẩn Bảng Kết Quả Float (Requirement 1) -->
+                <button id="btn-toggle-output" class="nav-btn output-btn" title="Mở Bảng kết quả Float">
+                    <i class="fa-solid fa-terminal"></i>
+                    <span>Kết quả</span>
+                    <span id="plot-badge" class="badge hidden">1</span>
+                </button>
+
+                <!-- Nút Menu File bên phải (Requirement 2) -->
+                <button id="btn-file-menu" class="nav-btn file-menu-btn" title="Mở Menu File nằm bên phải">
+                    <i class="fa-solid fa-folder-tree"></i>
+                    <span>Menu File</span>
+                </button>
+
+                <!-- Dropdown Menu Tác Vụ Cài Đặt -->
+                <div class="action-menu-container">
+                    <button id="btn-action-menu" class="icon-btn menu-btn" title="Cài đặt & Tác vụ">
+                        <i class="fa-solid fa-ellipsis-vertical"></i>
+                    </button>
+                    <div id="action-dropdown" class="action-dropdown hidden glass-card">
+                        <div class="dropdown-header">
+                            <i class="fa-solid fa-sliders"></i> MENU TÁC VỤ
+                        </div>
+                        <button class="dropdown-item" id="menu-save">
+                            <i class="fa-solid fa-floppy-disk text-cyan"></i>
+                            <div class="item-text">
+                                <span>Lưu file</span>
+                                <small>Lưu vào bộ nhớ (Ctrl+S)</small>
+                            </div>
+                        </button>
+                        <button class="dropdown-item" id="menu-new-file">
+                            <i class="fa-solid fa-file-circle-plus text-green"></i>
+                            <div class="item-text">
+                                <span>Tạo file mới</span>
+                                <small>Tạo thêm script Python</small>
+                            </div>
+                        </button>
+                        <button class="dropdown-item" id="menu-download">
+                            <i class="fa-solid fa-cloud-arrow-down text-yellow"></i>
+                            <div class="item-text">
+                                <span>Tải file .py về máy</span>
+                                <small>Xuất file sang thiết bị</small>
+                            </div>
+                        </button>
+                        <button class="dropdown-item" id="menu-import">
+                            <i class="fa-solid fa-file-import text-blue"></i>
+                            <div class="item-text">
+                                <span>Nhập file từ máy</span>
+                                <small>Đọc file .py từ thiết bị</small>
+                            </div>
+                        </button>
+                        <button class="dropdown-item" id="menu-check-update">
+                            <i class="fa-solid fa-arrows-rotate text-purple"></i>
+                            <div class="item-text">
+                                <span>Cập nhật từ GitHub</span>
+                                <small>Tải bản mới nhất đè vào</small>
+                            </div>
+                        </button>
+                        <hr class="dropdown-divider">
+                        <button class="dropdown-item" id="menu-settings">
+                            <i class="fa-solid fa-gear text-cyan"></i>
+                            <div class="item-text">
+                                <span>Cài đặt Editor</span>
+                                <small>Cỡ chữ, giao diện, wrap...</small>
+                            </div>
+                        </button>
+                        <button class="dropdown-item text-red" id="menu-clear-code">
+                            <i class="fa-solid fa-trash-can"></i>
+                            <div class="item-text">
+                                <span>Xóa trắng code</span>
+                                <small>Dọn sạch nội dung editor</small>
+                            </div>
+                        </button>
                     </div>
+                </div>
+            </div>
+        </header>
 
-                    <!-- Code Editor Body -->
-                    <div id="editor-container" class="editor-container">
-                        <div id="code-editor"></div>
-                    </div>
+        <!-- Main Workspace: Gồm đúng 2 Cột (Requirement 3) -->
+        <main class="main-workspace-2col">
+            <!-- Cột 1 (Bên trái ~20% màn hình): Nút, label, ký hiệu ngoặc, def, ref, keywords -->
+            <aside id="left-tools-column" class="left-tools-column">
+                <div class="tools-column-header">
+                    <i class="fa-solid fa-keyboard text-cyan"></i>
+                    <span>CÔNG CỤ CODE TOUCH</span>
+                </div>
 
-                    <!-- PyKey Touch Bar (Dedicated for iPad) -->
-                    <div id="pykey-toolbar" class="pykey-toolbar">
-                        <div class="pykey-scroll">
-                            <button class="pykey-btn" data-insert="\t">Tab</button>
-                            <button class="pykey-btn key-action" data-action="indent"><i class="fa-solid fa-indent"></i> Indent</button>
-                            <button class="pykey-btn key-action" data-action="outdent"><i class="fa-solid fa-outdent"></i> Outdent</button>
-                            <button class="pykey-btn symbol" data-insert=":">:</button>
+                <div class="tools-scroll-area">
+                    <!-- Section 1: Ký hiệu & Ngoặc -->
+                    <div class="tools-group">
+                        <div class="tools-group-title">KÝ HIỆU & NGOẶC</div>
+                        <div class="tools-grid cols-2">
                             <button class="pykey-btn symbol" data-pair="()"> ( ) </button>
                             <button class="pykey-btn symbol" data-pair="[]"> [ ] </button>
                             <button class="pykey-btn symbol" data-pair="{}"> { } </button>
                             <button class="pykey-btn symbol" data-insert=" = "> = </button>
-                            <button class="pykey-btn symbol" data-pair="&quot;&quot;"> &quot; &quot; </button>
+                            <button class="pykey-btn symbol" data-pair="&quot;&quot;"> " " </button>
                             <button class="pykey-btn symbol" data-pair="''"> ' ' </button>
+                            <button class="pykey-btn symbol" data-insert=":"> : </button>
+                            <button class="pykey-btn symbol" data-insert=", "> , </button>
+                            <button class="pykey-btn symbol" data-insert="."> . </button>
+                            <button class="pykey-btn symbol" data-insert="#"> # </button>
+                        </div>
+                    </div>
+
+                    <!-- Section 2: Từ khóa Python (def, ref, import, return...) -->
+                    <div class="tools-group">
+                        <div class="tools-group-title">TỪ KHÓA PYTHON</div>
+                        <div class="tools-grid cols-2">
                             <button class="pykey-btn keyword" data-insert="def ">def</button>
+                            <button class="pykey-btn keyword" data-insert="ref ">ref</button>
                             <button class="pykey-btn keyword" data-insert="import ">import</button>
+                            <button class="pykey-btn keyword" data-insert="from ">from</button>
                             <button class="pykey-btn keyword" data-insert="return ">return</button>
+                            <button class="pykey-btn keyword" data-insert="class ">class</button>
                             <button class="pykey-btn keyword" data-insert="if ">if</button>
+                            <button class="pykey-btn keyword" data-insert="elif ">elif</button>
+                            <button class="pykey-btn keyword" data-insert="else:">else</button>
                             <button class="pykey-btn keyword" data-insert="for ">for</button>
+                            <button class="pykey-btn keyword" data-insert="while ">while</button>
                             <button class="pykey-btn keyword" data-insert="print()">print</button>
-                            <button class="pykey-btn symbol" data-insert="#">#</button>
+                            <button class="pykey-btn keyword" data-insert="try:">try</button>
+                            <button class="pykey-btn keyword" data-insert="except:">except</button>
+                            <button class="pykey-btn keyword" data-insert="pass">pass</button>
+                            <button class="pykey-btn keyword" data-insert="lambda ">lambda</button>
+                        </div>
+                    </div>
+
+                    <!-- Section 3: Toán tử & So sánh -->
+                    <div class="tools-group">
+                        <div class="tools-group-title">TOÁN TỬ & SO SÁNH</div>
+                        <div class="tools-grid cols-3">
                             <button class="pykey-btn symbol" data-insert=" + ">+</button>
                             <button class="pykey-btn symbol" data-insert=" - ">-</button>
                             <button class="pykey-btn symbol" data-insert=" * ">*</button>
                             <button class="pykey-btn symbol" data-insert=" / ">/</button>
-                            <button class="pykey-btn key-action text-red" data-action="clear-editor"><i class="fa-solid fa-trash-can"></i> Clear</button>
+                            <button class="pykey-btn symbol" data-insert=" == ">==</button>
+                            <button class="pykey-btn symbol" data-insert=" != ">!=</button>
+                            <button class="pykey-btn symbol" data-insert=" &lt; ">&lt;</button>
+                            <button class="pykey-btn symbol" data-insert=" &gt; ">&gt;</button>
+                            <button class="pykey-btn symbol" data-insert=" ** ">**</button>
+                            <button class="pykey-btn keyword" data-insert=" in ">in</button>
+                            <button class="pykey-btn keyword" data-insert=" and ">and</button>
+                            <button class="pykey-btn keyword" data-insert=" or ">or</button>
+                        </div>
+                    </div>
+
+                    <!-- Section 4: Định dạng & Tab -->
+                    <div class="tools-group">
+                        <div class="tools-group-title">ĐỊNH DẠNG & TAB</div>
+                        <div class="tools-grid cols-2">
+                            <button class="pykey-btn" data-insert="    ">Tab</button>
+                            <button class="pykey-btn key-action" data-action="indent"><i class="fa-solid fa-indent"></i> Thụt lề</button>
+                            <button class="pykey-btn key-action" data-action="outdent"><i class="fa-solid fa-outdent"></i> Bỏ thụt</button>
+                            <button class="pykey-btn key-action" data-action="newline"><i class="fa-solid fa-turn-down"></i> Dòng mới</button>
                         </div>
                     </div>
                 </div>
+            </aside>
 
-                <!-- Resizer Separator -->
-                <div id="resizer" class="resizer"></div>
+            <!-- Cột 2 (Bên phải ~80% màn hình): Bảng Code Editor chủ đạo -->
+            <section id="right-editor-column" class="right-editor-column">
+                <!-- Thanh Tabs danh sách file đang mở -->
+                <div id="tabs-bar" class="tabs-bar">
+                    <!-- Dynamic file tabs -->
+                </div>
 
-                <!-- Output Pane -->
-                <div id="output-pane" class="pane output-pane">
-                    <div class="output-header-bar">
-                        <div class="output-tabs">
-                            <button class="output-tab-btn active" data-output-tab="console">
-                                <i class="fa-solid fa-terminal"></i> Console Output
-                            </button>
-                            <button class="output-tab-btn" data-output-tab="repl">
-                                <i class="fa-solid fa-greater-than"></i> REPL Interactive
-                            </button>
-                            <button class="output-tab-btn" data-output-tab="plot">
-                                <i class="fa-solid fa-chart-pie"></i> Đồ họa & Biểu đồ <span id="plot-badge" class="badge hidden">1</span>
-                            </button>
-                        </div>
-                        <div class="output-actions">
-                            <button id="btn-clear-console" title="Xóa Console Output">
-                                <i class="fa-solid fa-broom"></i>
-                            </button>
-                            <button id="btn-expand-output" title="Phóng to Output">
-                                <i class="fa-solid fa-expand"></i>
-                            </button>
+                <!-- Ace Editor Container -->
+                <div id="editor-container" class="editor-container">
+                    <div id="code-editor"></div>
+                </div>
+            </section>
+        </main>
+
+        <!-- ============================================================== -->
+        <!-- MENU FILE BÊN PHẢI (Requirement 2: File tag, mã mẫu, pyodide) -->
+        <!-- ============================================================== -->
+        <div id="file-menu-backdrop" class="file-menu-backdrop hidden"></div>
+        <aside id="right-file-menu" class="right-file-menu closed glass-card">
+            <div class="drawer-header">
+                <div class="drawer-title">
+                    <i class="fa-solid fa-folder-tree text-cyan"></i>
+                    <span>MENU FILE & TÀI NGUYÊN</span>
+                </div>
+                <button id="btn-close-file-menu" class="icon-btn" title="Đóng menu file">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Drawer tabs: File Tag, Mã Mẫu, Gói Pyodide -->
+            <div class="drawer-tabs">
+                <button class="drawer-tab-btn active" data-tab="files">
+                    <i class="fa-solid fa-folder-open"></i> Tập Tin
+                </button>
+                <button class="drawer-tab-btn" data-tab="examples">
+                    <i class="fa-solid fa-lightbulb"></i> Mã Mẫu
+                </button>
+                <button class="drawer-tab-btn" data-tab="packages">
+                    <i class="fa-solid fa-cubes"></i> Gói Pyodide
+                </button>
+            </div>
+
+            <!-- Tab 1: Danh sách Tập tin -->
+            <div id="tab-files" class="drawer-tab-content active">
+                <div class="drawer-action-row">
+                    <button id="drawer-new-file" class="mini-action-btn primary">
+                        <i class="fa-solid fa-plus"></i> Tạo File Mới
+                    </button>
+                    <button id="drawer-import-file" class="mini-action-btn secondary">
+                        <i class="fa-solid fa-file-import"></i> Nhập File
+                    </button>
+                </div>
+                <div class="section-label">CÁC TẬP TIN PYTHON TRONG DỰ ÁN</div>
+                <ul id="file-list" class="file-tree">
+                    <!-- Dynamic rendering by JS -->
+                </ul>
+            </div>
+
+            <!-- Tab 2: Thư viện Mã mẫu -->
+            <div id="tab-examples" class="drawer-tab-content">
+                <div class="section-label">CHỌN CODE MẪU ĐỂ NẠP VÀO EDITOR</div>
+                <div class="example-list">
+                    <div class="example-card" data-example="hello">
+                        <div class="example-icon"><i class="fa-solid fa-hand"></i></div>
+                        <div class="example-info">
+                            <h4>Hello World & Input</h4>
+                            <p>Cơ bản về biến, vòng lặp và nhập xuất</p>
                         </div>
                     </div>
-
-                    <!-- Console Tab -->
-                    <div id="out-tab-console" class="output-tab-content active">
-                        <div id="console-output" class="terminal-body">
-                            <div class="sys-msg"><i class="fa-solid fa-spinner fa-spin"></i> Đang khởi tạo Pyodide Python 3 Engine...</div>
+                    <div class="example-card" data-example="plot">
+                        <div class="example-icon"><i class="fa-solid fa-chart-line"></i></div>
+                        <div class="example-info">
+                            <h4>Matplotlib Chart</h4>
+                            <p>Vẽ biểu đồ Sin/Cos và thị giác hóa dữ liệu</p>
                         </div>
                     </div>
-
-                    <!-- REPL Tab -->
-                    <div id="out-tab-repl" class="output-tab-content">
-                        <div id="repl-output" class="terminal-body">
-                            <div class="sys-msg">PyPad Interactive REPL Shell (Python 3.11). Nhập code và nhấn Enter!</div>
-                        </div>
-                        <div class="repl-input-row">
-                            <span class="prompt-symbol">&gt;&gt;&gt;</span>
-                            <input type="text" id="repl-input" placeholder="Viết lệnh Python ở đây (vd: 12 * 8 hoặc import math)..." autocomplete="off" spellcheck="false">
-                            <button id="repl-send-btn"><i class="fa-solid fa-paper-plane"></i></button>
+                    <div class="example-card" data-example="turtle">
+                        <div class="example-icon"><i class="fa-solid fa-gamepad"></i></div>
+                        <div class="example-info">
+                            <h4>Turtle Spiral Graphics</h4>
+                            <p>Đồ họa nghệ thuật hình học sắc màu</p>
                         </div>
                     </div>
-
-                    <!-- Plot / Graphic Canvas Tab -->
-                    <div id="out-tab-plot" class="output-tab-content">
-                        <div id="plot-container" class="plot-container">
-                            <div class="empty-plot-placeholder">
-                                <i class="fa-solid fa-chart-line placeholder-icon"></i>
-                                <p>Chưa có hình ảnh hay đồ thị được tạo.</p>
-                                <small>Hãy chạy file mẫu <b>Matplotlib Chart</b> hoặc <b>Turtle Graphics</b> để xem kết quả đồ họa tại đây!</small>
-                            </div>
-                            <canvas id="turtle-canvas" class="hidden" width="600" height="400"></canvas>
-                            <div id="matplotlib-output" class="matplotlib-box"></div>
+                    <div class="example-card" data-example="game">
+                        <div class="example-icon"><i class="fa-solid fa-dice"></i></div>
+                        <div class="example-info">
+                            <h4>Game Đoán Số Interactive</h4>
+                            <p>Minigame tương tác trên Console</p>
                         </div>
+                    </div>
+                    <div class="example-card" data-example="ds">
+                        <div class="example-icon"><i class="fa-solid fa-calculator"></i></div>
+                        <div class="example-info">
+                            <h4>Numpy & Thống Kê</h4>
+                            <p>Tính toán ma trận và phân tích chuỗi số</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 3: Gói Pyodide WASM -->
+            <div id="tab-packages" class="drawer-tab-content">
+                <div class="section-label">THƯ VIỆN ĐÃ TÍCH HỢP TRỰC TIẾP</div>
+                <div class="packages-info">
+                    <p class="pkg-desc">PyPad chạy trực tiếp Python 3.11 WASM không cần server mạng:</p>
+                    <ul class="pkg-list">
+                        <li><i class="fa-solid fa-check text-green"></i> <code>matplotlib</code> (Biểu đồ dữ liệu)</li>
+                        <li><i class="fa-solid fa-check text-green"></i> <code>numpy</code> (Tính ma trận & mảng)</li>
+                        <li><i class="fa-solid fa-check text-green"></i> <code>math</code>, <code>random</code>, <code>json</code></li>
+                        <li><i class="fa-solid fa-check text-green"></i> <code>datetime</code>, <code>re</code>, <code>collections</code></li>
+                        <li><i class="fa-solid fa-check text-green"></i> <code>sys</code>, <code>io</code>, <code>base64</code></li>
+                    </ul>
+                    <button id="btn-install-micropip" class="secondary-btn btn-full">
+                        <i class="fa-solid fa-download"></i> Cài đặt gói mở rộng (micropip)
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- ========================================================================= -->
+        <!-- BẢNG KẾT QUẢ FLOAT (Requirement 1: Console, REPL, Plot dạng Bảng Float)  -->
+        <!-- ========================================================================= -->
+        <div id="floating-output-panel" class="floating-output-panel hidden glass-card">
+            <!-- Header Float Board -->
+            <div class="float-header-bar" id="float-drag-handle">
+                <div class="float-header-left">
+                    <span class="drag-indicator" title="Kéo thả bảng kết quả"><i class="fa-solid fa-grip-lines-vertical"></i></span>
+                    <div class="output-tabs">
+                        <button class="output-tab-btn active" data-output-tab="console">
+                            <i class="fa-solid fa-terminal"></i> Console Output
+                        </button>
+                        <button class="output-tab-btn" data-output-tab="repl">
+                            <i class="fa-solid fa-greater-than"></i> REPL Interactive
+                        </button>
+                        <button class="output-tab-btn" data-output-tab="plot">
+                            <i class="fa-solid fa-chart-pie"></i> Biểu Đồ & Đồ Họa <span id="plot-badge-inner" class="badge hidden">1</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="output-actions">
+                    <button id="btn-clear-console" title="Xóa màn hình Console">
+                        <i class="fa-solid fa-broom"></i>
+                    </button>
+                    <button id="btn-expand-output" title="Phóng to / Thu nhỏ">
+                        <i class="fa-solid fa-expand"></i>
+                    </button>
+                    <button id="btn-close-output" class="close-output-btn" title="Đóng bảng float">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Body Float Board -->
+            <div class="output-body-area">
+                <!-- Console Output Tab -->
+                <div id="out-tab-console" class="output-tab-content active">
+                    <div id="console-output" class="terminal-body">
+                        <div class="sys-msg"><i class="fa-solid fa-spinner fa-spin"></i> Đang khởi tạo Pyodide Python 3 Engine...</div>
+                    </div>
+                </div>
+
+                <!-- REPL Interactive Tab -->
+                <div id="out-tab-repl" class="output-tab-content">
+                    <div id="repl-output" class="terminal-body">
+                        <div class="sys-msg">PyPad Interactive REPL Shell (Python 3.11). Nhập code và nhấn Enter!</div>
+                    </div>
+                    <div class="repl-input-row">
+                        <span class="prompt-symbol">&gt;&gt;&gt;</span>
+                        <input type="text" id="repl-input" placeholder="Nhập lệnh Python (vd: 2**10 hoặc import math)..." autocomplete="off" spellcheck="false">
+                        <button id="repl-send-btn"><i class="fa-solid fa-paper-plane"></i></button>
+                    </div>
+                </div>
+
+                <!-- Plot / Graphic Canvas Tab -->
+                <div id="out-tab-plot" class="output-tab-content">
+                    <div id="plot-container" class="plot-container">
+                        <div class="empty-plot-placeholder">
+                            <i class="fa-solid fa-chart-line placeholder-icon"></i>
+                            <p>Chưa có hình ảnh hay đồ thị được tạo.</p>
+                            <small>Hãy chọn <b>Run Biểu đồ</b> hoặc chạy script Matplotlib để hiển thị kết quả!</small>
+                        </div>
+                        <canvas id="turtle-canvas" class="hidden" width="600" height="400"></canvas>
+                        <div id="matplotlib-output" class="matplotlib-box"></div>
                     </div>
                 </div>
             </div>
@@ -290,7 +461,39 @@
         <!-- Hidden Input File Picker -->
         <input type="file" id="file-picker" accept=".py,.txt,.json" style="display: none;">
 
-        <!-- Settings Modal -->
+        <!-- Modal Cập Nhật Từ GitHub -->
+        <div id="modal-update" class="modal hidden">
+            <div class="modal-content glass-card">
+                <div class="modal-header">
+                    <h3><i class="fa-solid fa-arrows-rotate text-purple"></i> Cập Nhật PyPad Từ GitHub</h3>
+                    <button class="modal-close" id="modal-update-close"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="modal-body">
+                    <div class="update-info-card">
+                        <div class="repo-name"><i class="fa-brands fa-github text-purple"></i> Repo: <code>NguyenPhucTienTien/pypad</code></div>
+                        <div id="update-status-box" class="update-status-box">
+                            <i class="fa-solid fa-spinner fa-spin"></i> Đang kết nối tới GitHub API...
+                        </div>
+                    </div>
+                    <div class="update-log hidden" id="update-commit-info">
+                        <div class="commit-header"><i class="fa-solid fa-code-commit"></i> Thông tin bản commit mới nhất:</div>
+                        <div class="commit-detail">
+                            <div class="commit-sha-badge" id="update-sha">Commit: -</div>
+                            <p class="commit-msg" id="update-msg">-</p>
+                            <small class="commit-date" id="update-date">-</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="btn-cancel-update" class="secondary-btn">Hủy</button>
+                    <button id="btn-start-update" class="action-btn run-btn" disabled>
+                        <i class="fa-solid fa-cloud-arrow-down"></i> Tải & Cập Nhật Đè
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Cài Đặt -->
         <div id="modal-settings" class="modal hidden">
             <div class="modal-content glass-card">
                 <div class="modal-header">
@@ -299,16 +502,16 @@
                 </div>
                 <div class="modal-body">
                     <div class="setting-item">
-                        <label for="setting-font-size">Kích thước chữ Editor (iPad font size):</label>
+                        <label for="setting-font-size">Kích thước chữ Editor (Font size):</label>
                         <select id="setting-font-size">
-                            <option value="14px">14px (Nhỏ)</option>
-                            <option value="16px" selected>16px (Vừa - Khuyên dùng)</option>
-                            <option value="18px">18px (Lớn cho iPad 11")</option>
-                            <option value="20px">20px (Lớn cho iPad 12.9")</option>
+                            <option value="14px">14px (Nhỏ gọn)</option>
+                            <option value="16px" selected>16px (Tiêu chuẩn - Khuyên dùng)</option>
+                            <option value="18px">18px (To rõ cho iPad 11")</option>
+                            <option value="20px">20px (Lớn cho iPad 12.9" / Mac)</option>
                         </select>
                     </div>
                     <div class="setting-item">
-                        <label for="setting-theme">Giao diện (Theme):</label>
+                        <label for="setting-theme">Giao diện màu sắc (Theme):</label>
                         <select id="setting-theme">
                             <option value="ace/theme/one_dark" selected>One Dark (Cyberpunk Pro)</option>
                             <option value="ace/theme/monokai">Monokai Dark</option>
@@ -317,12 +520,12 @@
                     </div>
                     <div class="setting-item">
                         <label class="checkbox-label">
-                            <input type="checkbox" id="setting-autocomplete" checked> Tự động gợi ý code (AutoComplete)
+                            <input type="checkbox" id="setting-autocomplete" checked> Tự động gợi ý code thông minh (AutoComplete)
                         </label>
                     </div>
                     <div class="setting-item">
                         <label class="checkbox-label">
-                            <input type="checkbox" id="setting-word-wrap" checked> Tự động xuống dòng (Word Wrap)
+                            <input type="checkbox" id="setting-word-wrap" checked> Tự động xuống dòng khi code dài (Word Wrap)
                         </label>
                     </div>
                 </div>
@@ -333,7 +536,7 @@
         </div>
     </div>
 
-    <!-- Application Script -->
+    <!-- Application Logic Script -->
     <script src="app.js"></script>
 </body>
 </html>
