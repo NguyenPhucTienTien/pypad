@@ -110,6 +110,18 @@
                     </div>
                 </div>
 
+                <!-- Nút PyPad AI Assistant -->
+                <button id="btn-ai-assistant" class="nav-btn ai-btn" title="PyPad AI Trợ Lý & Gợi Ý Code">
+                    <i class="fa-solid fa-wand-magic-sparkles text-yellow"></i>
+                    <span>PyPad AI</span>
+                </button>
+
+                <!-- Nút WinForms GUI Designer -->
+                <button id="btn-gui-designer" class="nav-btn gui-btn" title="Thiết Kế Giao Diện WinForms GUI Visual">
+                    <i class="fa-solid fa-window-maximize text-purple"></i>
+                    <span>WinForms GUI</span>
+                </button>
+
                 <!-- Nút Hiện/Ẩn Bảng Kết Quả Float (Requirement 1) -->
                 <button id="btn-toggle-output" class="nav-btn output-btn" title="Mở Bảng kết quả Float">
                     <i class="fa-solid fa-terminal"></i>
@@ -489,6 +501,167 @@
                     <button id="btn-start-update" class="action-btn run-btn" disabled>
                         <i class="fa-solid fa-cloud-arrow-down"></i> Tải & Cập Nhật Đè
                     </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal PyPad AI Assistant -->
+        <div id="modal-ai-assistant" class="modal hidden">
+            <div class="modal-content glass-card ai-modal-card">
+                <div class="modal-header">
+                    <h3><i class="fa-solid fa-wand-magic-sparkles text-yellow"></i> PyPad AI Assistant & Smart Code Generator</h3>
+                    <button class="modal-close" id="modal-ai-close"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="modal-body ai-body">
+                    <div class="ai-presets-bar">
+                        <span class="preset-label"><i class="fa-solid fa-lightbulb text-yellow"></i> Mẫu AI:</span>
+                        <button class="ai-chip-btn" data-prompt="algorithm">⚡ Thuật toán</button>
+                        <button class="ai-chip-btn" data-prompt="plot">📊 Matplotlib Chart</button>
+                        <button class="ai-chip-btn" data-prompt="art">🎨 Turtle Art</button>
+                        <button class="ai-chip-btn" data-prompt="fix">🛠️ Sửa Lỗi Code</button>
+                        <button class="ai-chip-btn" data-prompt="game">🎮 Minigame</button>
+                    </div>
+
+                    <div class="ai-input-group">
+                        <textarea id="ai-prompt-input" rows="3" placeholder="Nhập yêu cầu bằng Tiếng Việt (vd: Viết hàm đọc danh sách và sắp xếp, Tạo biểu đồ hình quạt, Tạo game caro...)..."></textarea>
+                        <div class="ai-action-buttons">
+                            <button id="btn-ai-generate" class="action-btn primary-btn run-btn">
+                                <i class="fa-solid fa-bolt"></i> Tạo Code AI
+                            </button>
+                            <button id="btn-ai-fix-current" class="secondary-btn">
+                                <i class="fa-solid fa-bug"></i> Phân Tích & Sửa Code Hiện Tại
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="ai-output-box">
+                        <div class="ai-output-header">
+                            <span><i class="fa-solid fa-code text-cyan"></i> KẾT QUẢ MÃ NGUỒN TỪ AI:</span>
+                            <div class="ai-output-tools">
+                                <button id="btn-ai-insert" class="mini-action-btn primary"><i class="fa-solid fa-file-import"></i> Chèn Vào Code Editor</button>
+                                <button id="btn-ai-copy" class="mini-action-btn secondary"><i class="fa-solid fa-copy"></i> Sao Chép</button>
+                            </div>
+                        </div>
+                        <pre id="ai-code-result" class="ai-code-result"><code># Kết quả sinh code từ AI sẽ hiển thị tại đây...</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal WinForms Visual GUI Designer -->
+        <div id="modal-gui-designer" class="modal hidden">
+            <div class="modal-content glass-card gui-modal-card">
+                <div class="modal-header">
+                    <div class="gui-header-title">
+                        <i class="fa-solid fa-window-maximize text-purple"></i>
+                        <span>WinForms Visual GUI Designer (PyPad Form Studio)</span>
+                    </div>
+                    <div class="gui-header-actions">
+                        <button id="btn-gui-export-run" class="action-btn run-btn">
+                            <i class="fa-solid fa-play"></i> ⚡ Xuất Code Python & Chạy
+                        </button>
+                        <button id="btn-gui-clear" class="secondary-btn">
+                            <i class="fa-solid fa-trash-can"></i> Xóa Form
+                        </button>
+                        <button class="modal-close" id="modal-gui-close"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                </div>
+
+                <div class="gui-designer-workspace">
+                    <!-- Column 1: Toolbox Controls Palette -->
+                    <div class="gui-toolbox">
+                        <div class="toolbox-header"><i class="fa-solid fa-toolbox"></i> TOOLBOX CONTROLS</div>
+                        <div class="toolbox-items">
+                            <button class="toolbox-item-btn" data-control-type="button">
+                                <i class="fa-solid fa-square-check text-green"></i>
+                                <span>Button (Nút Bấm)</span>
+                            </button>
+                            <button class="toolbox-item-btn" data-control-type="textbox">
+                                <i class="fa-solid fa-i-cursor text-cyan"></i>
+                                <span>TextBox (Ô Nhập)</span>
+                            </button>
+                            <button class="toolbox-item-btn" data-control-type="label">
+                                <i class="fa-solid fa-font text-yellow"></i>
+                                <span>Label (Nhãn Chữ)</span>
+                            </button>
+                            <button class="toolbox-item-btn" data-control-type="checkbox">
+                                <i class="fa-regular fa-square-check text-blue"></i>
+                                <span>CheckBox (Tích Chọn)</span>
+                            </button>
+                            <button class="toolbox-item-btn" data-control-type="listbox">
+                                <i class="fa-solid fa-list-check text-purple"></i>
+                                <span>ListBox (Danh Sách)</span>
+                            </button>
+                            <button class="toolbox-item-btn" data-control-type="panel">
+                                <i class="fa-regular fa-window-restore text-muted"></i>
+                                <span>Panel (Khung Chứa)</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Column 2: Visual Form Canvas -->
+                    <div class="gui-canvas-area">
+                        <div class="gui-form-window" id="gui-form-canvas">
+                            <div class="gui-form-titlebar">
+                                <span id="form-title-text"><i class="fa-solid fa-window-maximize"></i> Form1 (PyPad WinForms)</span>
+                                <div class="window-controls">
+                                    <span>_</span><span>□</span><span class="close-x">×</span>
+                                </div>
+                            </div>
+                            <div class="gui-form-body" id="gui-form-body">
+                                <div class="canvas-empty-hint" id="canvas-empty-hint">
+                                    <i class="fa-solid fa-hand-pointer"></i>
+                                    <p>Click vào công cụ ở bên trái để thêm Control vào Form!</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Column 3: Properties Inspector -->
+                    <div class="gui-properties-panel">
+                        <div class="properties-header"><i class="fa-solid fa-sliders"></i> THUỘC TÍNH (PROPERTIES)</div>
+                        <div id="properties-body" class="properties-body">
+                            <div class="prop-group">
+                                <label>Tên Control (Name):</label>
+                                <input type="text" id="prop-id" value="Form1" autocomplete="off">
+                            </div>
+                            <div class="prop-group">
+                                <label>Nội dung (Text/Label):</label>
+                                <input type="text" id="prop-text" value="Form Tiêu Đề" autocomplete="off">
+                            </div>
+                            <div class="prop-group">
+                                <label>Cỡ chữ (Font Size):</label>
+                                <select id="prop-font-size">
+                                    <option value="12px">12px</option>
+                                    <option value="14px" selected>14px</option>
+                                    <option value="16px">16px</option>
+                                    <option value="18px">18px</option>
+                                    <option value="22px">22px</option>
+                                </select>
+                            </div>
+                            <div class="prop-group">
+                                <label>Màu chữ (Color):</label>
+                                <input type="color" id="prop-color" value="#ffffff">
+                            </div>
+                            <div class="prop-group">
+                                <label>Màu nền (Background):</label>
+                                <input type="color" id="prop-bg" value="#334155">
+                            </div>
+                            <div class="prop-group cols-2">
+                                <div>
+                                    <label>Rộng (W):</label>
+                                    <input type="number" id="prop-width" value="120">
+                                </div>
+                                <div>
+                                    <label>Cao (H):</label>
+                                    <input type="number" id="prop-height" value="38">
+                                </div>
+                            </div>
+                            <button id="btn-delete-control" class="secondary-btn btn-full text-red" style="margin-top: 12px;">
+                                <i class="fa-solid fa-trash-can"></i> Xóa Control Đang Chọn
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

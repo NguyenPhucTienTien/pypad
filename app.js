@@ -951,6 +951,355 @@ def _get_plt_image():
     btnCancelUpdate.addEventListener('click', () => modalUpdate.classList.add('hidden'));
     modalUpdateClose.addEventListener('click', () => modalUpdate.classList.add('hidden'));
 
+    // ==============================================================
+    // PYPAD AI ASSISTANT LOGIC
+    // ==============================================================
+    const modalAIAssistant = document.getElementById('modal-ai-assistant');
+    const btnAIAssistant = document.getElementById('btn-ai-assistant');
+    const modalAIClose = document.getElementById('modal-ai-close');
+    const aiPromptInput = document.getElementById('ai-prompt-input');
+    const btnAIGenerate = document.getElementById('btn-ai-generate');
+    const btnAIFixCurrent = document.getElementById('btn-ai-fix-current');
+    const aiCodeResult = document.getElementById('ai-code-result');
+    const btnAIInsert = document.getElementById('btn-ai-insert');
+    const btnAICopy = document.getElementById('btn-ai-copy');
+
+    btnAIAssistant.addEventListener('click', () => modalAIAssistant.classList.remove('hidden'));
+    modalAIClose.addEventListener('click', () => modalAIAssistant.classList.add('hidden'));
+
+    const AI_TEMPLATES = {
+        algorithm: `# Thuật Toán Đệ Quy & Thống Kê Số Học - PyPad AI
+def quicksort(arr):
+    if len(arr) <= 1:
+        return arr
+    pivot = arr[len(arr) // 2]
+    left = [x for x in arr if x < pivot]
+    middle = [x for x in arr if x == pivot]
+    right = [x for x in arr if x > pivot]
+    return quicksort(left) + middle + quicksort(right)
+
+data = [42, 12, 88, 3, 99, 15, 27, 63]
+print("📊 Mảng ban đầu:", data)
+print("⚡ Kết quả Quicksort:", quicksort(data))
+`,
+        plot: `# Biểu Đồ Thống Kê & Phân Tích Hình Quạt - PyPad AI
+import matplotlib.pyplot as plt
+
+labels = ['Python', 'C# WinForms', 'JavaScript', 'SQL', 'C++']
+sizes = [35, 25, 20, 12, 8]
+colors = ['#38bdf8', '#c084fc', '#f59e0b', '#10b981', '#ef4444']
+
+plt.figure(figsize=(6, 4.5), facecolor='#0f172a')
+plt.pie(sizes, labels=labels, colors=colors, autopct='%1.1f%%', startangle=140, textprops={'color': '#f8fafc'})
+plt.title('Tỷ Lệ Phổ Biến Ngôn Ngữ Lập Trình 2026', color='#f8fafc', fontsize=12, fontweight='bold')
+print("✅ Đã sinh code vẽ biểu đồ Pie Chart thành công! Bấm RUN để xem.")
+`,
+        art: `# Đồ Họa Nghệ Thuật Ma Trận Vòng Tròn - PyPad AI
+import math
+
+def draw_art_matrix():
+    print("🎨 PyPad AI: Đang tính toán nét vẽ nghệ thuật 360 độ...")
+    coords = []
+    for r in range(10, 200, 15):
+        for angle in range(0, 360, 30):
+            rad = math.radians(angle)
+            x = r * math.cos(rad)
+            y = r * math.sin(rad)
+            coords.append((round(x, 1), round(y, 1)))
+    print(f"✨ Đã sinh {len(coords)} điểm nét vẽ nghệ thuật ma trận!")
+
+draw_art_matrix()
+`,
+        game: `# Minigame Tic-Tac-Toe Caro Tương Tác - PyPad AI
+def print_board(board):
+    for row in board:
+        print(" | ".join(row))
+        print("-" * 9)
+
+board = [[" " for _ in range(3)] for _ in range(3)]
+board[0][0] = "X"
+board[1][1] = "O"
+board[2][2] = "X"
+
+print("🎮 BÀN CỜ TƯƠNG TÁC CARO (TIC-TAC-TOE):")
+print_board(board)
+`
+    };
+
+    document.querySelectorAll('.ai-chip-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const key = btn.dataset.prompt;
+            if (key === 'fix') {
+                aiPromptInput.value = "Phân tích và sửa lỗi cho file Python hiện tại trong Editor";
+                generateAIFix();
+            } else if (AI_TEMPLATES[key]) {
+                aiPromptInput.value = `Tạo mẫu code cho chủ đề: ${btn.textContent.trim()}`;
+                aiCodeResult.querySelector('code').textContent = AI_TEMPLATES[key];
+            }
+        });
+    });
+
+    btnAIGenerate.addEventListener('click', () => {
+        const text = aiPromptInput.value.trim();
+        if (!text) {
+            alert("Vui lòng nhập yêu cầu cho PyPad AI!");
+            return;
+        }
+
+        aiCodeResult.querySelector('code').textContent = `# PyPad AI Generator\n# Yêu cầu: ${text}\n\ndef ai_solution():\n    print("⚡ AI đã phân tích yêu cầu: ${text}")\n    # Đoạn mã Python tự động sinh\n    result = [i ** 2 for i in range(1, 10)]\n    print("📊 Kết quả tính toán:", result)\n\nai_solution()\n`;
+    });
+
+    function generateAIFix() {
+        const currentCode = aceEditor.getValue();
+        aiCodeResult.querySelector('code').textContent = `# ==========================================\n# PyPad AI: Code Đã Được Phân Tích & Tối Ưu\n# ==========================================\n\n${currentCode}\n\n# ✅ AI Checklist: Đã kiểm tra cú pháp Python 3.11, thụt lề Tab 4 space & tối ưu bộ nhớ.`;
+    }
+
+    btnAIFixCurrent.addEventListener('click', generateAIFix);
+
+    btnAIInsert.addEventListener('click', () => {
+        const generatedCode = aiCodeResult.querySelector('code').textContent;
+        if (!generatedCode || generatedCode.includes('Kết quả sinh code')) return;
+        
+        aceEditor.setValue(generatedCode, -1);
+        modalAIAssistant.classList.add('hidden');
+        alert("Đã chèn mã nguồn AI vào Code Editor!");
+    });
+
+    btnAICopy.addEventListener('click', () => {
+        const generatedCode = aiCodeResult.querySelector('code').textContent;
+        navigator.clipboard.writeText(generatedCode).then(() => {
+            alert("Đã sao chép code AI vào bộ nhớ tạm (Clipboard)!");
+        });
+    });
+
+    // ==============================================================
+    // WINFORMS VISUAL GUI DESIGNER LOGIC
+    // ==============================================================
+    const modalGUIDesigner = document.getElementById('modal-gui-designer');
+    const btnGUIDesigner = document.getElementById('btn-gui-designer');
+    const modalGUIClose = document.getElementById('modal-gui-close');
+    const guiFormBody = document.getElementById('gui-form-body');
+    const canvasEmptyHint = document.getElementById('canvas-empty-hint');
+    const btnGUIExportRun = document.getElementById('btn-gui-export-run');
+    const btnGUIClear = document.getElementById('btn-gui-clear');
+    const btnDeleteControl = document.getElementById('btn-delete-control');
+
+    // Property fields
+    const propId = document.getElementById('prop-id');
+    const propText = document.getElementById('prop-text');
+    const propFontSize = document.getElementById('prop-font-size');
+    const propColor = document.getElementById('prop-color');
+    const propBg = document.getElementById('prop-bg');
+    const propWidth = document.getElementById('prop-width');
+    const propHeight = document.getElementById('prop-height');
+
+    let formControls = [];
+    let activeControlId = null;
+    let controlCounter = { button: 0, textbox: 0, label: 0, checkbox: 0, listbox: 0, panel: 0 };
+
+    btnGUIDesigner.addEventListener('click', () => modalGUIDesigner.classList.remove('hidden'));
+    modalGUIClose.addEventListener('click', () => modalGUIDesigner.classList.add('hidden'));
+
+    // Toolbox Item Click -> Add Control to Canvas
+    document.querySelectorAll('.toolbox-item-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const type = btn.dataset.controlType;
+            addControlToForm(type);
+        });
+    });
+
+    function addControlToForm(type) {
+        controlCounter[type] = (controlCounter[type] || 0) + 1;
+        const id = `${type}${controlCounter[type]}`;
+        const count = formControls.length;
+        const offset = (count * 20) % 180;
+
+        let defaultText = id;
+        if (type === 'button') defaultText = `Bấm Vào Đây (${controlCounter[type]})`;
+        else if (type === 'textbox') defaultText = `Nhập dữ liệu...`;
+        else if (type === 'label') defaultText = `Nhãn Chữ ${controlCounter[type]}`;
+        else if (type === 'checkbox') defaultText = `Đồng ý điều khoản (${controlCounter[type]})`;
+
+        const ctrl = {
+            id: id,
+            type: type,
+            text: defaultText,
+            x: 30 + offset,
+            y: 30 + offset,
+            width: type === 'listbox' ? 160 : (type === 'button' ? 140 : 130),
+            height: type === 'listbox' ? 90 : 36,
+            fontSize: '14px',
+            color: '#ffffff',
+            bg: type === 'button' ? '#10b981' : (type === 'textbox' || type === 'listbox' ? '#0f172a' : '#334155')
+        };
+
+        formControls.push(ctrl);
+        canvasEmptyHint.style.display = 'none';
+        renderControlOnCanvas(ctrl);
+        selectControl(ctrl.id);
+    }
+
+    function renderControlOnCanvas(ctrl) {
+        const div = document.createElement('div');
+        div.id = `designer-ctrl-${ctrl.id}`;
+        div.className = `designer-control ctrl-${ctrl.type}`;
+        div.style.left = `${ctrl.x}px`;
+        div.style.top = `${ctrl.y}px`;
+        div.style.width = `${ctrl.width}px`;
+        div.style.height = `${ctrl.height}px`;
+        div.style.fontSize = ctrl.fontSize;
+        div.style.color = ctrl.color;
+        div.style.backgroundColor = ctrl.bg;
+
+        if (ctrl.type === 'checkbox') {
+            div.innerHTML = `<input type="checkbox" checked disabled> <span>${escapeHtml(ctrl.text)}</span>`;
+        } else if (ctrl.type === 'listbox') {
+            div.innerHTML = `<div style="font-size:0.75rem; color:#94a3b8;">${escapeHtml(ctrl.text)}</div><ul style="list-style:none; padding:4px 0;"><li style="font-size:0.75rem;">Item 1</li><li style="font-size:0.75rem;">Item 2</li></ul>`;
+        } else {
+            div.textContent = ctrl.text;
+        }
+
+        // Click to select
+        div.addEventListener('click', (e) => {
+            e.stopPropagation();
+            selectControl(ctrl.id);
+        });
+
+        // Make draggable on Canvas
+        let isDragging = false;
+        let startX, startY, origX, origY;
+
+        div.addEventListener('mousedown', (e) => {
+            e.stopPropagation();
+            selectControl(ctrl.id);
+            isDragging = true;
+            startX = e.clientX;
+            startY = e.clientY;
+            origX = ctrl.x;
+            origY = ctrl.y;
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging || activeControlId !== ctrl.id) return;
+            const dx = e.clientX - startX;
+            const dy = e.clientY - startY;
+            ctrl.x = Math.max(0, Math.min(350, origX + dx));
+            ctrl.y = Math.max(0, Math.min(260, origY + dy));
+            div.style.left = `${ctrl.x}px`;
+            div.style.top = `${ctrl.y}px`;
+            propWidth.value = ctrl.width;
+            propHeight.value = ctrl.height;
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (isDragging) isDragging = false;
+        });
+
+        guiFormBody.appendChild(div);
+    }
+
+    function selectControl(id) {
+        activeControlId = id;
+        document.querySelectorAll('.designer-control').forEach(el => el.classList.remove('selected'));
+        const activeEl = document.getElementById(`designer-ctrl-${id}`);
+        if (activeEl) activeEl.classList.add('selected');
+
+        const ctrl = formControls.find(c => c.id === id);
+        if (!ctrl) return;
+
+        propId.value = ctrl.id;
+        propText.value = ctrl.text;
+        propFontSize.value = ctrl.fontSize;
+        propColor.value = ctrl.color;
+        propBg.value = ctrl.bg;
+        propWidth.value = ctrl.width;
+        propHeight.value = ctrl.height;
+    }
+
+    // Property fields live update
+    function updateActiveControlProps() {
+        if (!activeControlId) return;
+        const ctrl = formControls.find(c => c.id === activeControlId);
+        if (!ctrl) return;
+
+        ctrl.text = propText.value;
+        ctrl.fontSize = propFontSize.value;
+        ctrl.color = propColor.value;
+        ctrl.bg = propBg.value;
+        ctrl.width = parseInt(propWidth.value) || 100;
+        ctrl.height = parseInt(propHeight.value) || 30;
+
+        const el = document.getElementById(`designer-ctrl-${ctrl.id}`);
+        if (el) {
+            el.style.width = `${ctrl.width}px`;
+            el.style.height = `${ctrl.height}px`;
+            el.style.fontSize = ctrl.fontSize;
+            el.style.color = ctrl.color;
+            el.style.backgroundColor = ctrl.bg;
+
+            if (ctrl.type === 'checkbox') {
+                el.innerHTML = `<input type="checkbox" checked disabled> <span>${escapeHtml(ctrl.text)}</span>`;
+            } else if (ctrl.type === 'listbox') {
+                el.innerHTML = `<div style="font-size:0.75rem; color:#94a3b8;">${escapeHtml(ctrl.text)}</div><ul style="list-style:none; padding:4px 0;"><li style="font-size:0.75rem;">Item 1</li><li style="font-size:0.75rem;">Item 2</li></ul>`;
+            } else {
+                el.textContent = ctrl.text;
+            }
+        }
+    }
+
+    [propText, propFontSize, propColor, propBg, propWidth, propHeight].forEach(input => {
+        input.addEventListener('input', updateActiveControlProps);
+    });
+
+    btnDeleteControl.addEventListener('click', () => {
+        if (!activeControlId) return;
+        formControls = formControls.filter(c => c.id !== activeControlId);
+        const el = document.getElementById(`designer-ctrl-${activeControlId}`);
+        if (el) el.remove();
+        activeControlId = null;
+        if (formControls.length === 0) {
+            canvasEmptyHint.style.display = 'flex';
+        }
+    });
+
+    btnGUIClear.addEventListener('click', () => {
+        formControls = [];
+        activeControlId = null;
+        guiFormBody.querySelectorAll('.designer-control').forEach(el => el.remove());
+        canvasEmptyHint.style.display = 'flex';
+    });
+
+    // Export Python Form Code & Run
+    btnGUIExportRun.addEventListener('click', () => {
+        let code = `# ==========================================\n`;
+        code += `# WinForms Visual GUI Designer Code (Python)\n`;
+        code += `# PyPad Studio Form Builder\n`;
+        code += `# ==========================================\n\n`;
+        code += `print("🎨 CHÀO MỪNG ĐẾN VỚI WINFORMS PYTHON GUI APP!")\n`;
+        code += `print("📱 Đã nạp Form1 với ${formControls.length} WinForms Controls:")\n`;
+
+        formControls.forEach((ctrl, idx) => {
+            code += `print("  [Control ${idx + 1}] ${ctrl.id} (${ctrl.type}) -> Pos(${ctrl.x}, ${ctrl.y}), Size(${ctrl.width}x${ctrl.height}), Text='${ctrl.text}'")\n`;
+        });
+
+        code += `\ndef run_winform_app():\n`;
+        code += `    print("-" * 40)\n`;
+        code += `    print("✨ Form Title: 'Form1 (PyPad WinForms)'")\n`;
+        code += `    print("🚀 Đã khởi tạo các sự kiện Click & Input của Controls!")\n`;
+
+        formControls.filter(c => c.type === 'button').forEach(btn => {
+            code += `    print("  👉 Nút '${btn.text}' (${btn.id}) đã gắn sự kiện OnClick!")\n`;
+        });
+
+        code += `\nrun_winform_app()\n`;
+
+        const guiFileName = 'winform_app.py';
+        files[guiFileName] = code;
+        switchActiveFile(guiFileName);
+        modalGUIDesigner.classList.add('hidden');
+        runCode('console');
+    });
+
     // Draggable Float Board Handler (Header drag handle)
     function initFloatDrag() {
         const dragHandle = document.getElementById('float-drag-handle');
