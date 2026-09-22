@@ -418,6 +418,9 @@
                         <button class="output-tab-btn" data-output-tab="plot">
                             <i class="fa-solid fa-chart-pie"></i> Biểu Đồ & Đồ Họa <span id="plot-badge-inner" class="badge hidden">1</span>
                         </button>
+                        <button class="output-tab-btn" data-output-tab="winform">
+                            <i class="fa-solid fa-window-restore text-purple"></i> WinForms App
+                        </button>
                     </div>
                 </div>
 
@@ -465,6 +468,20 @@
                         </div>
                         <canvas id="turtle-canvas" class="hidden" width="600" height="400"></canvas>
                         <div id="matplotlib-output" class="matplotlib-box"></div>
+                    </div>
+                </div>
+
+                <!-- WinForms Interactive Live Preview Tab -->
+                <div id="out-tab-winform" class="output-tab-content">
+                    <div id="winform-live-stage" class="winform-live-stage">
+                        <div class="empty-plot-placeholder" id="winform-placeholder">
+                            <i class="fa-solid fa-window-maximize placeholder-icon text-purple"></i>
+                            <p>Chưa có Form WinForms nào được khởi chạy.</p>
+                            <small>Mở <b>WinForms GUI</b> -> Thiết kế Form -> Bấm <b>⚡ Xuất Code Python & Chạy</b> để xem Form hiển thị và bấm nút tương tác trực tiếp!</small>
+                        </div>
+                        <div id="winform-live-window" class="winform-live-window hidden">
+                            <!-- Rendered Live Interactive Form -->
+                        </div>
                     </div>
                 </div>
             </div>
@@ -657,7 +674,12 @@
                                     <input type="number" id="prop-height" value="38">
                                 </div>
                             </div>
-                            <button id="btn-delete-control" class="secondary-btn btn-full text-red" style="margin-top: 12px;">
+                            <hr class="dropdown-divider" style="margin: 8px 0;">
+                            <div class="prop-group">
+                                <label><i class="fa-solid fa-bolt text-yellow"></i> Sự Kiện Code (OnClick Event):</label>
+                                <textarea id="prop-event-code" rows="3" placeholder="Nhập code Python khi click (vd: print('Đã click nút!'))"></textarea>
+                            </div>
+                            <button id="btn-delete-control" class="secondary-btn btn-full text-red" style="margin-top: 10px;">
                                 <i class="fa-solid fa-trash-can"></i> Xóa Control Đang Chọn
                             </button>
                         </div>

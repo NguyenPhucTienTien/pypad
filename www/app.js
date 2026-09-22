@@ -1092,6 +1092,7 @@ print_board(board)
     const propBg = document.getElementById('prop-bg');
     const propWidth = document.getElementById('prop-width');
     const propHeight = document.getElementById('prop-height');
+    const propEventCode = document.getElementById('prop-event-code');
 
     let formControls = [];
     let activeControlId = null;
@@ -1115,15 +1116,25 @@ print_board(board)
         const offset = (count * 20) % 180;
 
         let defaultText = id;
-        if (type === 'button') defaultText = `Bấm Vào Đây (${controlCounter[type]})`;
-        else if (type === 'textbox') defaultText = `Nhập dữ liệu...`;
-        else if (type === 'label') defaultText = `Nhãn Chữ ${controlCounter[type]}`;
-        else if (type === 'checkbox') defaultText = `Đồng ý điều khoản (${controlCounter[type]})`;
+        let defaultEvent = `print("🚀 [${id} Clicked]: Hello from ${id}!")`;
+
+        if (type === 'button') {
+            defaultText = `Bấm Vào Đây (${controlCounter[type]})`;
+            defaultEvent = `print("✅ [Button Click]: Đã nhấn nút '${defaultText}'!")`;
+        } else if (type === 'textbox') {
+            defaultText = `Nhập dữ liệu...`;
+            defaultEvent = `print("📝 [TextBox Event]: Đã nhập dữ liệu!")`;
+        } else if (type === 'label') {
+            defaultText = `Nhãn Chữ ${controlCounter[type]}`;
+        } else if (type === 'checkbox') {
+            defaultText = `Đồng ý điều khoản (${controlCounter[type]})`;
+        }
 
         const ctrl = {
             id: id,
             type: type,
             text: defaultText,
+            eventCode: defaultEvent,
             x: 30 + offset,
             y: 30 + offset,
             width: type === 'listbox' ? 160 : (type === 'button' ? 140 : 130),
@@ -1214,6 +1225,7 @@ print_board(board)
         propBg.value = ctrl.bg;
         propWidth.value = ctrl.width;
         propHeight.value = ctrl.height;
+        propEventCode.value = ctrl.eventCode || '';
     }
 
     // Property fields live update
@@ -1228,6 +1240,7 @@ print_board(board)
         ctrl.bg = propBg.value;
         ctrl.width = parseInt(propWidth.value) || 100;
         ctrl.height = parseInt(propHeight.value) || 30;
+        ctrl.eventCode = propEventCode.value;
 
         const el = document.getElementById(`designer-ctrl-${ctrl.id}`);
         if (el) {
@@ -1247,7 +1260,7 @@ print_board(board)
         }
     }
 
-    [propText, propFontSize, propColor, propBg, propWidth, propHeight].forEach(input => {
+    [propText, propFontSize, propColor, propBg, propWidth, propHeight, propEventCode].forEach(input => {
         input.addEventListener('input', updateActiveControlProps);
     });
 
@@ -1269,6 +1282,105 @@ print_board(board)
         canvasEmptyHint.style.display = 'flex';
     });
 
+    // Render Live Interactive WinForms App Window in Output Tab
+    function renderWinFormsLiveApp(controls) {
+        const placeholder = document.getElementById('winform-placeholder');
+        const winWindow = document.getElementById('winform-live-window');
+        if (placeholder) placeholder.style.display = 'none';
+        winWindow.classList.remove('hidden');
+        winWindow.innerHTML = '';
+
+        // Titlebar
+        const titlebar = document.createElement('div');
+        titlebar.className = 'winform-live-titlebar';
+        titlebar.innerHTML = `
+            <span><i class="fa-solid fa-window-maximize"></i> Form1 (PyPad Interactive WinForms)</span>
+            <div class="window-controls"><span>_</span><span>□</span><span class="close-x">×</span></div>
+        `;
+        winWindow.appendChild(titlebar);
+
+        // Body
+        const body = document.createElement('div');
+        body.className = 'winform-live-body';
+
+        controls.forEach(ctrl => {
+            if (ctrl.type === 'button') {
+                const btn = document.createElement('button');
+                btn.className = 'winform-live-btn';
+                btn.style.left = `${ctrl.x}px`;
+                btn.style.top = `${ctrl.y}px`;
+                btn.style.width = `${ctrl.width}px`;
+                btn.style.height = `${ctrl.height}px`;
+                btn.style.fontSize = ctrl.fontSize;
+                btn.style.color = ctrl.color;
+                btn.style.backgroundColor = ctrl.bg;
+                btn.textContent = ctrl.text;
+
+                btn.addEventListener('click', async () => {
+                    logConsole("sys-msg", `▶ Event: '${ctrl.id}' Clicked! Thực thi Python event handler...`);
+                    if (ctrl.eventCode && isPyodideReady) {
+                        try {
+                            const res = await pyodideInstance.runPythonAsync(ctrl.eventCode);
+                            if (res !== undefined && res !== null) {
+                                logConsole("log-result", "➜ " + res.toString());
+                            }
+                        } catch (e) {
+                            renderConsoleError(e, ctrl.eventCode);
+                        }
+                    } else {
+                        logConsole("log-stdout", `✅ [${ctrl.id}_Click]: Hello from ${ctrl.text}!`);
+                    }
+                });
+                body.appendChild(btn);
+            } else if (ctrl.type === 'textbox') {
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.className = 'winform-live-input';
+                input.style.left = `${ctrl.x}px`;
+                input.style.top = `${ctrl.y}px`;
+                input.style.width = `${ctrl.width}px`;
+                input.style.height = `${ctrl.height}px`;
+                input.style.fontSize = ctrl.fontSize;
+                input.style.color = ctrl.color;
+                input.style.backgroundColor = ctrl.bg;
+                input.value = ctrl.text;
+
+                input.addEventListener('input', () => {
+                    ctrl.text = input.value;
+                    logConsole("sys-msg", `📝 [${ctrl.id}_Changed]: "${input.value}"`);
+                });
+                body.appendChild(input);
+            } else if (ctrl.type === 'label') {
+                const lbl = document.createElement('div');
+                lbl.className = 'winform-live-label';
+                lbl.style.left = `${ctrl.x}px`;
+                lbl.style.top = `${ctrl.y}px`;
+                lbl.style.width = `${ctrl.width}px`;
+                lbl.style.height = `${ctrl.height}px`;
+                lbl.style.fontSize = ctrl.fontSize;
+                lbl.style.color = ctrl.color;
+                lbl.textContent = ctrl.text;
+                body.appendChild(lbl);
+            } else if (ctrl.type === 'checkbox') {
+                const cbLabel = document.createElement('label');
+                cbLabel.className = 'winform-live-checkbox';
+                cbLabel.style.left = `${ctrl.x}px`;
+                cbLabel.style.top = `${ctrl.y}px`;
+                cbLabel.style.fontSize = ctrl.fontSize;
+                cbLabel.style.color = ctrl.color;
+                cbLabel.innerHTML = `<input type="checkbox" checked> <span>${escapeHtml(ctrl.text)}</span>`;
+
+                const cbInput = cbLabel.querySelector('input');
+                cbInput.addEventListener('change', () => {
+                    logConsole("log-stdout", `☑ [${ctrl.id}_Toggle]: Checked = ${cbInput.checked}`);
+                });
+                body.appendChild(cbLabel);
+            }
+        });
+
+        winWindow.appendChild(body);
+    }
+
     // Export Python Form Code & Run
     btnGUIExportRun.addEventListener('click', () => {
         let code = `# ==========================================\n`;
@@ -1280,15 +1392,18 @@ print_board(board)
 
         formControls.forEach((ctrl, idx) => {
             code += `print("  [Control ${idx + 1}] ${ctrl.id} (${ctrl.type}) -> Pos(${ctrl.x}, ${ctrl.y}), Size(${ctrl.width}x${ctrl.height}), Text='${ctrl.text}'")\n`;
+            if (ctrl.eventCode) {
+                code += `# Event handler for ${ctrl.id}:\n# ${ctrl.eventCode.replace(/\n/g, '\n# ')}\n`;
+            }
         });
 
         code += `\ndef run_winform_app():\n`;
         code += `    print("-" * 40)\n`;
         code += `    print("✨ Form Title: 'Form1 (PyPad WinForms)'")\n`;
-        code += `    print("🚀 Đã khởi tạo các sự kiện Click & Input của Controls!")\n`;
+        code += `    print("🚀 Đã nạp Form hiển thị trực quan vào Tab 'WinForms App'!")\n`;
 
         formControls.filter(c => c.type === 'button').forEach(btn => {
-            code += `    print("  👉 Nút '${btn.text}' (${btn.id}) đã gắn sự kiện OnClick!")\n`;
+            code += `    print("  👉 Nút '${btn.text}' (${btn.id}) sẵn sàng nhận sự kiện Click!")\n`;
         });
 
         code += `\nrun_winform_app()\n`;
@@ -1297,7 +1412,11 @@ print_board(board)
         files[guiFileName] = code;
         switchActiveFile(guiFileName);
         modalGUIDesigner.classList.add('hidden');
-        runCode('console');
+
+        // Render live interactive form in WinForms output tab
+        renderWinFormsLiveApp(formControls);
+        showFloatingOutput('winform');
+        runCode('winform');
     });
 
     // Draggable Float Board Handler (Header drag handle)

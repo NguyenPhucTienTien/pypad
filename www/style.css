@@ -1694,3 +1694,114 @@ body, html {
 }
 .prop-group.cols-2 > div { flex: 1; }
 
+#prop-event-code {
+    width: 100%;
+    padding: 6px 8px;
+    border-radius: 6px;
+    background: #0f172a;
+    border: 1px solid var(--border-color);
+    color: var(--python-yellow);
+    font-family: var(--font-code);
+    font-size: 0.78rem;
+    resize: vertical;
+    outline: none;
+}
+
+/* ============================================================== */
+/* WINFORMS LIVE INTERACTIVE APP STYLES                           */
+/* ============================================================== */
+.winform-live-stage {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: #0b0f19;
+    overflow: auto;
+    position: relative;
+}
+
+.winform-live-window {
+    width: 480px;
+    height: 340px;
+    background: #1e293b;
+    border: 2px solid var(--primary-accent);
+    border-radius: 12px;
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.8), 0 0 25px rgba(56, 189, 248, 0.25);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+}
+
+.winform-live-titlebar {
+    height: 34px;
+    background: #0f172a;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 14px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--primary-accent);
+    user-select: none;
+}
+
+.winform-live-body {
+    flex: 1;
+    position: relative;
+    background: #1e293b;
+    overflow: hidden;
+}
+
+.winform-live-btn {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 6px;
+    font-family: var(--font-sans);
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.1s, opacity 0.15s, box-shadow 0.15s;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+.winform-live-btn:hover {
+    filter: brightness(1.1);
+    box-shadow: 0 6px 15px rgba(0,0,0,0.4);
+}
+
+.winform-live-btn:active {
+    transform: scale(0.96);
+}
+
+.winform-live-input {
+    position: absolute;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 0 8px;
+    font-family: var(--font-sans);
+    outline: none;
+    background: #0f172a;
+    color: #f8fafc;
+}
+
+.winform-live-label {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    font-family: var(--font-sans);
+}
+
+.winform-live-checkbox {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-sans);
+    cursor: pointer;
+}
+
