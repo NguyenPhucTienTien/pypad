@@ -250,6 +250,125 @@ def _get_plt_image():
         }
     }
 
+    // Smart Error Parsing & Display Utility
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    function parsePythonError(err, code = "") {
+        const rawMsg = err.message || err.toString();
+        const lines = rawMsg.split('\n').map(l => l.trim()).filter(Boolean);
+
+        let lineNo = null;
+        let errorType = "PythonError";
+        let errorDetail = rawMsg;
+
+        // Parse last line for Error Type and Detail
+        for (let i = lines.length - 1; i >= 0; i--) {
+            const line = lines[i];
+            const matchErr = line.match(/^([A-Za-z_][A-Za-z0-9_]*Error|Exception):\s*(.*)$/);
+            if (matchErr) {
+                errorType = matchErr[1];
+                errorDetail = matchErr[2] || line;
+                break;
+            }
+        }
+
+        // Parse line number in user script
+        const lineMatches = [...rawMsg.matchAll(/File\s+["'](?:<exec>|[^"']+)["'],\s+line\s+(\d+)/gi)];
+        if (lineMatches.length > 0) {
+            lineNo = parseInt(lineMatches[lineMatches.length - 1][1]);
+        } else {
+            const syntaxMatch = rawMsg.match(/line\s+(\d+)/i);
+            if (syntaxMatch) {
+                lineNo = parseInt(syntaxMatch[1]);
+            }
+        }
+
+        // Extract code snippet if available
+        let lineSnippet = "";
+        if (lineNo && code) {
+            const codeLines = code.split('\n');
+            if (lineNo <= codeLines.length) {
+                lineSnippet = codeLines[lineNo - 1].trim();
+            }
+        }
+
+        return {
+            lineNo,
+            errorType,
+            errorDetail,
+            lineSnippet,
+            rawMsg
+        };
+    }
+
+    function renderConsoleError(err, code) {
+        const parsed = parsePythonError(err, code);
+
+        // Highlight error line in Ace Editor
+        if (parsed.lineNo && aceEditor) {
+            aceEditor.session.setAnnotations([{
+                row: parsed.lineNo - 1,
+                column: 0,
+                text: `${parsed.errorType}: ${parsed.errorDetail}`,
+                type: "error"
+            }]);
+            aceEditor.gotoLine(parsed.lineNo, 0, true);
+        }
+
+        // Build Error Card element
+        const card = document.createElement('div');
+        card.className = 'error-card';
+        
+        const titleText = parsed.lineNo 
+            ? `LỖI TẠI DÒNG ${parsed.lineNo}: ${parsed.errorType}`
+            : `LỖI THỰC THI: ${parsed.errorType}`;
+
+        card.innerHTML = `
+            <div class="error-card-header">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <span>${titleText}</span>
+            </div>
+            <div class="error-card-body">
+                <div class="error-detail-text">${escapeHtml(parsed.errorDetail)}</div>
+                ${parsed.lineSnippet ? `<div class="error-code-preview">📍 <b>Dòng ${parsed.lineNo}:</b> <code>${escapeHtml(parsed.lineSnippet)}</code></div>` : ''}
+            </div>
+            <div class="error-card-actions">
+                ${parsed.lineNo ? `<button class="jump-to-error-btn"><i class="fa-solid fa-crosshairs"></i> Nhảy đến Dòng ${parsed.lineNo} trong Editor</button>` : ''}
+                <button class="toggle-traceback-btn"><i class="fa-solid fa-code"></i> Xem Chi Tiết Traceback</button>
+            </div>
+            <pre class="traceback-details hidden">${escapeHtml(parsed.rawMsg)}</pre>
+        `;
+
+        const jumpBtn = card.querySelector('.jump-to-error-btn');
+        if (jumpBtn) {
+            jumpBtn.addEventListener('click', () => {
+                aceEditor.gotoLine(parsed.lineNo, 0, true);
+                aceEditor.focus();
+            });
+        }
+
+        const toggleBtn = card.querySelector('.toggle-traceback-btn');
+        const tracebackBox = card.querySelector('.traceback-details');
+        toggleBtn.addEventListener('click', () => {
+            const isHidden = tracebackBox.classList.contains('hidden');
+            tracebackBox.classList.toggle('hidden', !isHidden);
+            toggleBtn.innerHTML = isHidden 
+                ? '<i class="fa-solid fa-chevron-up"></i> Ẩn Traceback' 
+                : '<i class="fa-solid fa-code"></i> Xem Chi Tiết Traceback';
+        });
+
+        consoleOutput.appendChild(card);
+        consoleOutput.scrollTop = consoleOutput.scrollHeight;
+    }
+
     // Console Log Utility
     function logConsole(typeClass, message) {
         const div = document.createElement('div');
@@ -314,6 +433,11 @@ def _get_plt_image():
         btnRun.classList.add('hidden');
         btnStop.classList.remove('hidden');
 
+        // Clear previous error annotations in editor
+        if (aceEditor) {
+            aceEditor.session.clearAnnotations();
+        }
+
         // Always display floating output panel when running
         showFloatingOutput(targetTab);
 
@@ -350,7 +474,7 @@ def _get_plt_image():
             logConsole("sys-msg", `\n✔ Thực thi hoàn tất trong ${duration}s.`);
             unsavedIndicator.classList.add('hidden');
         } catch (err) {
-            logConsole("log-error", "Traceback (most recent call last):\n" + err.message);
+            renderConsoleError(err, code);
         } finally {
             isRunning = false;
             btnRun.classList.remove('hidden');

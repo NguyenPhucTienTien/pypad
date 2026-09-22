@@ -946,6 +946,115 @@ body, html {
     margin-top: 6px;
 }
 
+/* Smart Error Card Styles */
+.error-card {
+    background: rgba(239, 68, 68, 0.08);
+    border: 1px solid rgba(239, 68, 68, 0.35);
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin: 10px 0;
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.15);
+}
+
+.error-card-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #f87171;
+    margin-bottom: 8px;
+    border-bottom: 1px solid rgba(239, 68, 68, 0.2);
+    padding-bottom: 6px;
+}
+
+.error-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.error-detail-text {
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: #fee2e2;
+    font-family: var(--font-code);
+}
+
+.error-code-preview {
+    background: rgba(0, 0, 0, 0.35);
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 0.82rem;
+    color: var(--python-yellow);
+    border-left: 3px solid var(--python-yellow);
+    font-family: var(--font-code);
+}
+
+.error-code-preview code {
+    color: #f8fafc;
+    font-weight: 600;
+}
+
+.error-card-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.jump-to-error-btn {
+    background: linear-gradient(135deg, #ef4444, #b91c1c);
+    color: #ffffff;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.jump-to-error-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+}
+
+.toggle-traceback-btn {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--border-color);
+    color: var(--text-muted);
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.toggle-traceback-btn:hover {
+    color: var(--text-main);
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.traceback-details {
+    margin-top: 10px;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 6px;
+    font-family: var(--font-code);
+    font-size: 0.78rem;
+    color: #fca5a5;
+    white-space: pre-wrap;
+    word-break: break-all;
+    border-top: 1px dashed rgba(239, 68, 68, 0.3);
+}
+
 /* REPL Mode */
 .repl-input-row {
     display: flex;
